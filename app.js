@@ -8,7 +8,7 @@ const userRoutes = require('./api/routes/user');
 const resourceRoutes = require('./api/routes/resources');
 
 mongoose.connect(
-    `mongodb+srv://kingCloser:${process.env.DATABASE_PASS}@closernation-ouqc4.mongodb.net/test?retryWrites=true`
+    `mongodb+srv://kingCloser:${process.env.DATABASE_PASS}@closernation-ouqc4.mongodb.net/test?retryWrites=true`, {useNewUrlParser: true}
 );
 
 app.use(bodyParser.urlencoded({extended: false}));
