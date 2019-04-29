@@ -6,7 +6,8 @@ const userSchema = mongoose.Schema({
     userName: {type: String, required: true, unique: true},
     password: {type: String, required: true},
     passwordNonHash: String,
-    paidSubscription: {type: Boolean, required: true, default: false}
+    paidSubscription: {type: Boolean, default: false},
+    admin: {type: Boolean, default: false}
 });
 
 module.exports = mongoose.model('User', userSchema);

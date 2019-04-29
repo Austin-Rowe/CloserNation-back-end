@@ -13,10 +13,10 @@ router.get('/:email', checkAuth, UserController.user_get_via_email);
 router.patch('/:userId', checkAuth, UserController.user_patch);
 router.delete('/:userId', checkAuth, UserController.user_delete);
 
-//DEV TESTING ONLY REMOVE IN PRODUCTION
+//DEV TESTING ONLY ---> REMOVE IN PRODUCTION
 router.get('/', (req, res, next) => {
     User.find()
-    .select('email userName password paidSubscription passwordNonHash')
+    .select('email userName password paidSubscription passwordNonHash admin')
     .exec()
     .then(docs => {
         if(docs.length >= 1){

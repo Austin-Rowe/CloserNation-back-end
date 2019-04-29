@@ -72,7 +72,7 @@ exports.user_login = (req, res, next) => {
             .exec()
             .then(username => {
                 if(!username){
-                    res.status(401).json({
+                    res.status(403).json({
                         message: "Auth failed"
                     });
                 } else {
@@ -87,7 +87,9 @@ exports.user_login = (req, res, next) => {
                                 {
                                     email: username.email,
                                     userName: username.userName,
-                                    _id: username._id
+                                    _id: username._id,
+                                    paidSubscription: username.paidSubscription,
+                                    admin: username.admin
                                 }, 
                                 process.env.JWT_KEY, 
                                 {
@@ -99,7 +101,7 @@ exports.user_login = (req, res, next) => {
                                 token: token
                             });
                         } else {
-                            res.status(401).json({
+                            res.status(403).json({
                                 message: "Auth failed"
                             })
                         }
@@ -123,7 +125,9 @@ exports.user_login = (req, res, next) => {
                         {
                             email: user.email,
                             userName: user.userName,
-                            _id: user._id
+                            _id: user._id,
+                            paidSubscription: user.paidSubscription,
+                            admin: user.admin
                         }, 
                         process.env.JWT_KEY, 
                         {
@@ -135,7 +139,7 @@ exports.user_login = (req, res, next) => {
                         token: token
                     });
                 } else {
-                    res.status(401).json({
+                    res.status(403).json({
                         message: "Auth failed"
                     })
                 }
@@ -159,12 +163,14 @@ exports.user_get_via_email = (req, res, next) => {
             if(doc._id == req.decodedTokenUserData._id){
                 res.status(200).json({doc});
             } else {
-                res.status(401).json({
+                res.status(403).json({
                     message: 'Auth failed'
                 });
             }
         } else {
-           res.status(404).json({message: 'No such user!'}); 
+            res.status(403).json({
+                message: 'Auth failed'
+            });        
         }
     })
     .catch(err => {
@@ -176,7 +182,7 @@ exports.user_get_via_email = (req, res, next) => {
 exports.user_patch = (req, res, next) => {
     const userId = req.params.userId;
     if(userId != req.decodedTokenUserData._id){
-        res.status(401).json({
+        res.status(403).json({
             message: 'Auth failed'
         });
     } else {
@@ -202,7 +208,7 @@ exports.user_patch = (req, res, next) => {
 exports.user_delete = (req, res, next) => {
     const userId = req.params.userId;
     if(userId != req.decodedTokenUserData._id){
-        res.status(401).json({
+        res.status(403).json({
             message: 'Auth failed'
         });
     } else {
