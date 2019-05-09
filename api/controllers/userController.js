@@ -225,3 +225,29 @@ exports.user_delete = (req, res, next) => {
         });
     }
 };
+
+exports.user_alter_permissions = (req, res, next) => {
+    const userName = req.params.userName;
+    if(req.decodedTokenUserData.admin){
+        const updateOps = {};
+        for(const ops of req.body.changes){
+            updateOps[ops.propName] = ops.value;
+        };
+        User.update({userName: userName}, {$set: updateOps})
+        .exec()
+        .then(result => {
+            res.status(200).json({
+                message: `Successfully updated user with userName ${userName}`,
+                result: result
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+    } else {
+        res.status(403).json({
+            message: 'Auth failed'
+        });
+    }
+};

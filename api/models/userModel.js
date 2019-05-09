@@ -7,7 +7,9 @@ const userSchema = mongoose.Schema({
     password: {type: String, required: true},
     passwordNonHash: String,
     paidSubscription: {type: Boolean, default: false},
-    admin: {type: Boolean, default: false}
+    admin: {type: Boolean, default: false},
+    banned: {type: Boolean, default: false},
+    canChat: {type: Boolean, default: true}
 });
 
 module.exports = mongoose.model('User', userSchema);

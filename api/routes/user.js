@@ -12,11 +12,12 @@ router.post('/login', UserController.user_login);
 router.get('/:email', checkAuth, UserController.user_get_via_email);
 router.patch('/:userId', checkAuth, UserController.user_patch);
 router.delete('/:userId', checkAuth, UserController.user_delete);
+router.patch('/alter-permissions/:userName', checkAuth, UserController.user_alter_permissions);
 
 //DEV TESTING ONLY ---> REMOVE IN PRODUCTION
 router.get('/', (req, res, next) => {
     User.find()
-    .select('email userName password paidSubscription passwordNonHash admin')
+    .select('email userName password paidSubscription passwordNonHash admin banned canChat')
     .exec()
     .then(docs => {
         if(docs.length >= 1){
