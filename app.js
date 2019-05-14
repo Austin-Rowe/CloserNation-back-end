@@ -2,14 +2,10 @@ require('dotenv/config');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 
 const userRoutes = require('./api/routes/user');
 const resourceRoutes = require('./api/routes/resources');
 
-mongoose.connect(
-    `mongodb+srv://kingCloser:${process.env.DATABASE_PASS}@closernation-ouqc4.mongodb.net/test?retryWrites=true`, {useNewUrlParser: true}
-);
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
