@@ -22,18 +22,6 @@ mongoose.connect(
 io.on('connection', (socket) => {
     console.log('a user connected');
 
-    socket.on('connectToChat', (obj) => {
-        console.log('user attempting to enter chat');
-        const {token} = obj;
-        try{
-            const decoded = jwt.verify(token, process.env.JWT_KEY);
-            socket.emit('connectToChat', decoded.userName);
-            console.log('user entered chat');
-        } catch(err){
-            console.log('invalid token connectToChat');
-        }
-    });
-
     socket.on('post message', (obj) => {
         console.log('user attempting to post message');
         const {token} = obj;
@@ -43,14 +31,25 @@ io.on('connection', (socket) => {
             .select('_id')
             .exec()
             .then(bannedUsers => {
-                if(-1 === bannedUsers.findIndex(user => user._id === decoded._id)){
-                    io.emit('new message', obj.message);
-                    console.log('message posted: ' + obj.message);
+                if(0 > bannedUsers.findIndex(user => user.id === decoded._id)){
+                    if(obj.message === ''){
+                        socket.emit('err', 'message cant be blank');
+                    } else if(obj.message.length > 500){
+                        socket.emit('err', 'message must be less than 500 characters');
+                    } else {
+                        io.emit('new message', {message: obj.message, userName: decoded.userName});
+                        console.log('message posted: ' + obj.message);
+                    }
+                } else {
+                    socket.emit('err', 'User currently muted');
                 }
             })
-            .catch()
+            .catch(err => {
+                socket.emit('err', 'Error checking database for muted users');
+                console.log(err);
+            });
         } catch(err){
-            socket.emit('err', 'Forbidden to chat');
+            socket.emit('err', 'invalid token');
         }
     });
 
