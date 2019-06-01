@@ -11,7 +11,7 @@ router.post('/signup', UserController.user_signup);
 router.post('/login', UserController.user_login);
 router.get('/:email', checkAuth, UserController.user_get_via_email);
 router.patch('/:userId', checkAuth, UserController.user_patch);
-router.delete('/:userId', checkAuth, UserController.user_delete);
+router.delete('/', checkAuth, UserController.user_delete);
 router.patch('/alter-permissions/:userName', checkAuth, UserController.user_alter_permissions);
 
 //DEV TESTING ONLY ---> REMOVE IN PRODUCTION
