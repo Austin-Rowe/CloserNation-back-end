@@ -6,8 +6,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 exports.user_signup = (req, res, next) => {
-    const {email, userName, password} = req.body;
-    User.findOne({email: email})
+    let {email, userName, password} = req.body;
+    email = email.toLowerCase();
+    userName = userName.toLowerCase();
+    User.findOne({email: email.toLowerCase()})
     .exec()
     .then(result => {
         if(result){
@@ -63,7 +65,8 @@ exports.user_signup = (req, res, next) => {
 };
 
 exports.user_login = (req, res, next) => {
-    const {identity, password} = req.body;
+    let {identity, password} = req.body;
+    identity = identity.toLowerCase();
     User.findOne({email: identity})
     .exec()
     .then(user => {
@@ -206,6 +209,93 @@ exports.user_patch = (req, res, next) => {
 };
 
 exports.user_delete = (req, res, next) => {
+    const {identity, password} = req.body;
+    User.findOne({email: identity})
+    .exec()
+    .then(user => {
+        if(!user){
+            User.findOne({userName: identity})
+            .exec()
+            .then(username => {
+                if(!username){
+                    res.status(403).json({
+                        message: "Auth failed"
+                    });
+                } else if(req.decodedTokenUserData._id != username._id){
+                    res.status(403).json({
+                        message: "Auth failed"
+                    })
+                } else {
+                    bcrypt.compare(password, username.password, (err, result) => {
+                        if(err){
+                            console.log(err);
+                            res.status(500).json({
+                                error: err
+                            });
+                        } else if(result){
+                            User.deleteOne({_id: username._id})
+                            .exec()
+                            .then(result => {
+                                res.status(200).json(result)
+                            })
+                            .catch(err => {
+                                console.log(err);
+                                res.status(500).json({
+                                    error: err
+                                });
+                            });
+                        } else {
+                            res.status(403).json({
+                                message: "Auth failed"
+                            })
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).json({
+                    error: err
+                });
+            });
+        } else if(req.decodedTokenUserData._id != user._id){
+            res.status(403).json({
+                message: "Auth failed"
+            })
+        } else {
+            bcrypt.compare(password, user.password, (err, result) => {
+                if(err){
+                    console.log(err);
+                    res.status(500).json({
+                        error: err
+                    });
+                } else if(result){
+                    User.deleteOne({_id: user._id})
+                    .exec()
+                    .then(result => {
+                        res.status(200).json(result)
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        res.status(500).json({
+                            error: err
+                        });
+                    });
+                } else {
+                    res.status(403).json({
+                        message: "Auth failed"
+                    })
+                }
+            });
+        }
+    })
+    .catch(err => {
+        res.status(500).json({
+            error: err
+        });
+    });
+};
+
+/* exports.user_delete = (req, res, next) => {
     const userId = req.params.userId;
     if(userId != req.decodedTokenUserData._id){
         res.status(403).json({
@@ -224,7 +314,7 @@ exports.user_delete = (req, res, next) => {
             });
         });
     }
-};
+}; */
 
 exports.user_alter_permissions = (req, res, next) => {
     const userName = req.params.userName;
