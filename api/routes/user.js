@@ -17,7 +17,7 @@ router.patch('/alter-permissions/:userName', checkAuth, UserController.user_alte
 //DEV TESTING ONLY ---> REMOVE IN PRODUCTION
 router.get('/', (req, res, next) => {
     User.find()
-    .select('email userName password paidSubscription passwordNonHash admin banned canChat')
+    .select('email userName password paidSubscription passwordNonHash admin banned canChat paypalRecurringPaymentId')
     .exec()
     .then(docs => {
         if(docs.length >= 1){

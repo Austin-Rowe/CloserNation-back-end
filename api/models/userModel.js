@@ -9,7 +9,8 @@ const userSchema = mongoose.Schema({
     paidSubscription: {type: Boolean, default: false},
     admin: {type: Boolean, default: false},
     banned: {type: Boolean, default: false},
-    canChat: {type: Boolean, default: true}
+    canChat: {type: Boolean, default: true},
+    paypalRecurringPaymentId: {type: String, default: 'no_id'}
 });
 
 module.exports = mongoose.model('User', userSchema);
