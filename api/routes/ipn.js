@@ -78,8 +78,6 @@ router.use(ipn_pal.validator({ path: "/ipn", sandbox: true }, function (err, bod
     } else {
         console.log(err);
     }
-    
-    
 }));
 
 module.exports = router;
