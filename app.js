@@ -7,7 +7,6 @@ const userRoutes = require('./api/routes/user');
 const resourceRoutes = require('./api/routes/resources');
 const paypalRoutes = require('./api/routes/paypal');
 const ipnRoute = require('./api/routes/ipn');
-const requestPasswordChangeEmailRoute = require('./api/routes/passwordChangeRequest');
 const changePasswordRoute = require('./api/routes/changePassword');
 
 
@@ -27,7 +26,6 @@ app.use('/user', userRoutes);
 app.use('/resources', resourceRoutes);
 app.use('/paypal', paypalRoutes);
 app.use('/ipn', ipnRoute);
-app.use('/password-reset-request', requestPasswordChangeEmailRoute);
 app.use('/change-password', changePasswordRoute);
 
 app.use((req, res, next) => {

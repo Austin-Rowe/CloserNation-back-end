@@ -6,7 +6,7 @@ const User = require('../models/userModel');
 
 
 
-router.use(ipn_pal.validator({ path: "/ipn", sandbox: true }, function (err, body) {
+router.use(ipn_pal.validator({ path: "/ipn", sandbox: true }, (err, body) => {
     // recurring_payment_id
     if(!err){
         let subscribed;

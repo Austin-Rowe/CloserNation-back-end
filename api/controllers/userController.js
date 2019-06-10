@@ -5,11 +5,10 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/userModel');
 
-exports.user_signup = (req, res, next) => {
-    let {email, userName, password} = req.body;
+exports.user_signup = (req, res) => {
+    let {email, userName, password, firstName, lastName} = req.body;
     email = email.toLowerCase();
-    userName = userName.toLowerCase();
-    User.findOne({email: email.toLowerCase()})
+    User.findOne({email: email})
     .exec()
     .then(result => {
         if(result){
@@ -32,12 +31,12 @@ exports.user_signup = (req, res, next) => {
                                 email: email,
                                 userName: userName,
                                 password: hash,
-                                passwordNonHash: password
+                                firstName: firstName,
+                                lastName: lastName
                             });
                             user.save().then(result => {
                                 res.status(200).json({
-                                    message: "User created",
-                                    createdUser: result
+                                    message: "User created"
                                 });
                             }).catch(err => {
                                 res.status(500).json({
@@ -64,10 +63,9 @@ exports.user_signup = (req, res, next) => {
     });
 };
 
-exports.user_login = (req, res, next) => {
+exports.user_login = (req, res) => {
     let {identity, password} = req.body;
-    identity = identity.toLowerCase();
-    User.findOne({email: identity})
+    User.findOne({email: identity.toLowerCase()})
     .exec()
     .then(user => {
         if(!user){
@@ -101,7 +99,8 @@ exports.user_login = (req, res, next) => {
                             );
                             res.status(200).json({
                                 message: "Auth successful",
-                                token: token
+                                token: token,
+                                admin: username.admin
                             });
                         } else {
                             res.status(403).json({
@@ -139,7 +138,8 @@ exports.user_login = (req, res, next) => {
                     );
                     res.status(200).json({
                         message: "Auth successful",
-                        token: token
+                        token: token,
+                        admin: user.admin
                     });
                 } else {
                     res.status(403).json({
@@ -156,14 +156,14 @@ exports.user_login = (req, res, next) => {
     });
 };
 
-exports.user_get_via_email = (req, res, next) => {
+exports.user_get_via_email = (req, res) => {
     const email = req.params.email;
-    User.findOne({email: email})
+    User.findOne({email: email.toLowerCase()})
     .select('email username _id paidSubscription')
     .exec()
     .then(doc => {
         if(doc){
-            if(doc._id == req.decodedTokenUserData._id){
+            if(doc._id === req.decodedTokenUserData._id){
                 res.status(200).json({doc});
             } else {
                 res.status(403).json({
@@ -182,9 +182,9 @@ exports.user_get_via_email = (req, res, next) => {
     })
 };
 
-exports.user_patch = (req, res, next) => {
+exports.user_patch = (req, res) => {
     const userId = req.params.userId;
-    if(userId != req.decodedTokenUserData._id){
+    if(userId !== req.decodedTokenUserData._id){
         res.status(403).json({
             message: 'Auth failed'
         });
@@ -208,9 +208,9 @@ exports.user_patch = (req, res, next) => {
     }
 };
 
-exports.user_delete = (req, res, next) => {
+exports.user_delete = (req, res) => {
     const {identity, password} = req.body;
-    User.findOne({email: identity})
+    User.findOne({email: identity.toLowerCase()})
     .exec()
     .then(user => {
         if(!user){
@@ -295,28 +295,7 @@ exports.user_delete = (req, res, next) => {
     });
 };
 
-/* exports.user_delete = (req, res, next) => {
-    const userId = req.params.userId;
-    if(userId != req.decodedTokenUserData._id){
-        res.status(403).json({
-            message: 'Auth failed'
-        });
-    } else {
-        User.deleteOne({_id: userId})
-        .exec()
-        .then(result => {
-            res.status(200).json(result)
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
-    }
-}; */
-
-exports.user_alter_permissions = (req, res, next) => {
+exports.user_alter_permissions = (req, res) => {
     const userName = req.params.userName;
     if(req.decodedTokenUserData.admin){
         const updateOps = {};
@@ -341,3 +320,26 @@ exports.user_alter_permissions = (req, res, next) => {
         });
     }
 };
+
+exports.user_get_all_muted = (req, res) => {
+    console.log("Request made it to user_get_all_muted")
+    if(req.decodedTokenUserData.admin){
+        User.find({canChat: false})
+        .select('userName')
+        .exec()
+        .then(users => {
+            const userNames = users.map(rec => rec.userName);
+            res.status(200).json(userNames);
+        })
+        .catch(err => {
+            res.status(500).json({
+                error: err
+            });
+        })
+    } else {
+        res.status(406).json({
+            error: "Must be admin"
+        })
+    }
+    
+}

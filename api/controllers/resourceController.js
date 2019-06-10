@@ -2,10 +2,11 @@ const mongoose = require('mongoose');
 
 const Resource = require('../models/resourceModel');
 
-exports.resource_getAll = (req, res, next) => {
+exports.resource_getAll = (req, res) => {
+    //Change to true to ensure subscribers only can access resources before going to production 
     if(!req.decodedTokenUserData.paidSubscription){
         Resource.find()
-        .select('title URL description')
+        .select('title URL description isStreamLink')
         .exec()
         .then(docs => {
             if(docs.length >= 1){
@@ -25,7 +26,7 @@ exports.resource_getAll = (req, res, next) => {
     }
 };
 
-exports.resource_createNew = (req, res, next) => {
+exports.resource_createNew = (req, res) => {
     const {title, URL, description} = req.body;
     const creator_id = req.decodedTokenUserData._id;
     if(req.decodedTokenUserData.admin){
@@ -34,7 +35,8 @@ exports.resource_createNew = (req, res, next) => {
             title: title,
             URL: URL,
             description: description,
-            creator_id: creator_id
+            creator_id: creator_id,
+            isStreamLink: false
         });
         resource.save().then(result => {
             res.status(200).json({
@@ -49,13 +51,13 @@ exports.resource_createNew = (req, res, next) => {
         });
     } else {
         res.status(403).json({
-            message: 'Auth failed'
+            message: 'Must be an admin to edit resources'
         });
     }
     
 };
 
-exports.resource_patch = (req, res, next) => {
+exports.resource_patch = (req, res) => {
     const resourceId = req.body.resourceId;
     const updateOps = {};
     const admin = req.decodedTokenUserData.admin;
@@ -78,12 +80,12 @@ exports.resource_patch = (req, res, next) => {
         });
     } else {
         res.status(403).json({
-            message: "Auth failed"
+            message: "Must be an admin to edit resources"
         });
     }
 };
 
-exports.resource_delete = (req, res, next) => {
+exports.resource_delete = (req, res) => {
     const resourceId = req.params.resource_id;
     const admin = req.decodedTokenUserData.admin;
     if(admin){
@@ -100,7 +102,7 @@ exports.resource_delete = (req, res, next) => {
         });
     } else {
         res.status(403).json({
-            message: 'Auth failed'
+            message: 'Must be an admin to edit resources'
         });
     }
 };

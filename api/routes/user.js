@@ -9,6 +9,7 @@ const UserController = require('../controllers/userController');
 
 router.post('/signup', UserController.user_signup);
 router.post('/login', UserController.user_login);
+router.get('/muted-users', checkAuth, UserController.user_get_all_muted);
 router.get('/:email', checkAuth, UserController.user_get_via_email);
 router.patch('/:userId', checkAuth, UserController.user_patch);
 router.delete('/', checkAuth, UserController.user_delete);
@@ -17,7 +18,6 @@ router.patch('/alter-permissions/:userName', checkAuth, UserController.user_alte
 //DEV TESTING ONLY ---> REMOVE IN PRODUCTION
 router.get('/', (req, res, next) => {
     User.find()
-    .select('email userName password paidSubscription passwordNonHash admin banned canChat paypalRecurringPaymentId')
     .exec()
     .then(docs => {
         if(docs.length >= 1){
