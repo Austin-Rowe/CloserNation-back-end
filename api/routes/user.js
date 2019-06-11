@@ -10,7 +10,6 @@ const UserController = require('../controllers/userController');
 router.post('/signup', UserController.user_signup);
 router.post('/login', UserController.user_login);
 router.get('/muted-users', checkAuth, UserController.user_get_all_muted);
-router.get('/:email', checkAuth, UserController.user_get_via_email);
 router.patch('/:userId', checkAuth, UserController.user_patch);
 router.delete('/', checkAuth, UserController.user_delete);
 router.patch('/alter-permissions/:userName', checkAuth, UserController.user_alter_permissions);
