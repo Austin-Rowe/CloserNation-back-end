@@ -4,9 +4,9 @@ const Resource = require('../models/resourceModel');
 
 exports.resource_getAll = (req, res) => {
     //Change to true to ensure subscribers only can access resources before going to production 
-    if(!req.decodedTokenUserData.paidSubscription){
+    if(req.decodedTokenUserData.paidSubscription){
         Resource.find()
-        .select('title URL description isStreamLink')
+        .select('title URL description isStreamLink _id')
         .exec()
         .then(docs => {
             if(docs.length >= 1){
