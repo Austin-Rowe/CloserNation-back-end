@@ -100,7 +100,8 @@ exports.user_login = (req, res) => {
                             res.status(200).json({
                                 message: "Auth successful",
                                 token: token,
-                                admin: username.admin
+                                admin: username.admin,
+                                paidSubscription: username.paidSubscription
                             });
                         } else {
                             res.status(403).json({
@@ -139,7 +140,8 @@ exports.user_login = (req, res) => {
                     res.status(200).json({
                         message: "Auth successful",
                         token: token,
-                        admin: user.admin
+                        admin: user.admin,
+                        paidSubscription: username.paidSubscription
                     });
                 } else {
                     res.status(403).json({
@@ -322,7 +324,6 @@ exports.user_alter_permissions = (req, res) => {
 };
 
 exports.user_get_all_muted = (req, res) => {
-    console.log("Request made it to user_get_all_muted")
     if(req.decodedTokenUserData.admin){
         User.find({canChat: false})
         .select('userName')
@@ -341,5 +342,4 @@ exports.user_get_all_muted = (req, res) => {
             error: "Must be admin"
         })
     }
-    
 }
