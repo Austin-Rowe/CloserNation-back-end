@@ -11,7 +11,7 @@ const checkAuth = require('../authMiddleWare/checkAuth');
 
 router.post('/subscribe', checkAuth, (req, res) => {
     const { decodedTokenUserData } = req;
-    const { given_name, surname, email } = req.body;
+    
 
     User.findById(decodedTokenUserData._id)
     .exec()
@@ -26,7 +26,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                 if(!err){
                     if(keys.length <= 0){
                         //Get access token from paypal
-                        request.post("https://api.sandbox.paypal.com/v1/oauth2/token", {
+                        request.post("https://api.paypal.com/v1/oauth2/token", {
                             'auth': {
                                 'user': `${process.env.PAYPAL_ID}`,
                                 'pass': `${process.env.PAYPAL_SECRET}`
@@ -49,7 +49,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                 myCache.set('paypal_token', access_token, (expires_in - 20), (err, success) => {
                                     if( !err && success ){
                                         //Make request to get subscription confirmation link
-                                        request.post("https://api.sandbox.paypal.com/v1/billing/subscriptions", {
+                                        request.post("https://api.paypal.com/v1/billing/subscriptions", {
                                             'auth': {
                                                 'bearer': access_token
                                             },
@@ -59,21 +59,21 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                                 'Prefer': 'return=representation',
                                             },
                                             'body': JSON.stringify({
-                                                plan_id: "P-6MA51485CC2422435LTWG5SQ",
+                                                plan_id: "P-73X22587DB470064RLT7625Q",
                                                 subscriber: {
                                                     name: {
-                                                        given_name,
-                                                        surname
+                                                        given_name: user.firstName,
+                                                        surname: user.lastName
                                                     },
-                                                    email_address: email
+                                                    email_address: user.email
                                                 },
                                                 auto_renewal: true,
                                                 application_context: {
-                                                    brand_name: "THE CLOSER NATION SHOW",
+                                                    brand_name: "THE BEST CLOSER SHOW",
                                                     locale: "en-US",
                                                     shipping_preference: "NO_SHIPPING",
-                                                    return_url: "https://example.com/returnUrl",
-                                                    cancel_url: "https://example.com/returnUrl"
+                                                    return_url: "https://bestclosershow.com",
+                                                    cancel_url: "https://bestclosershow.com"
                                                 }
                                             })
                                         },
@@ -114,7 +114,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                     } else if(keys.length >= 1){
                         myCache.get('paypal_token', (error, token) => {
                             if(!error){
-                                request.post("https://api.sandbox.paypal.com/v1/billing/subscriptions", {
+                                request.post("https://api.paypal.com/v1/billing/subscriptions", {
                                     'auth': {
                                         'bearer': token
                                     },
@@ -124,21 +124,21 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                         'Prefer': 'return=representation',
                                     },
                                     'body': JSON.stringify({
-                                        plan_id: "P-6MA51485CC2422435LTWG5SQ",
+                                        plan_id: "P-73X22587DB470064RLT7625Q",
                                         subscriber: {
                                             name: {
-                                                given_name: given_name,
-                                                surname: surname
+                                                given_name: user.firstName,
+                                                surname: user.lastName
                                             },
-                                            email_address: email
+                                            email_address: user.email
                                         },
                                         auto_renewal: true,
                                         application_context: {
-                                            brand_name: "THE CLOSER NATION SHOW",
+                                            brand_name: "THE BEST CLOSER SHOW",
                                             locale: "en-US",
                                             shipping_preference: "NO_SHIPPING",
-                                            return_url: "https://example.com/returnUrl",
-                                            cancel_url: "https://example.com/returnUrl"
+                                            return_url: "https://bestclosershow.com",
+                                            cancel_url: "https://bestclosershow.com"
                                         }
                                     })
                                 },
