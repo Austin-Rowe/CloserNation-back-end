@@ -6,7 +6,7 @@ const User = require('../models/userModel');
 
 
 
-router.use(ipn_pal.validator({ path: "/ipn", sandbox: true }, (err, body) => {
+router.use(ipn_pal.validator({ path: "/ipn", sandbox: false }, (err, body) => {
     // recurring_payment_id
     if(!err){
         let subscribed;
@@ -53,7 +53,7 @@ router.use(ipn_pal.validator({ path: "/ipn", sandbox: true }, (err, body) => {
         if(subscribed){
             if(payment_status === "Completed" || payment_status === "Processed"){
                 if(subscribed !== null){
-                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed})
+                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed, mostRecentIpnMessage: body})
                     .exec()
                     .then(result => {
                         console.log(result);
@@ -65,7 +65,7 @@ router.use(ipn_pal.validator({ path: "/ipn", sandbox: true }, (err, body) => {
             }
         } else {
             if(subscribed !== null){
-                User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed})
+                User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed, mostRecentIpnMessage: body})
                 .exec()
                 .then(result => {
                     console.log(result);
