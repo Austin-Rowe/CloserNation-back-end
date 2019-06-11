@@ -23,11 +23,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('/', res => {
-    res.sendFile(path.join(__dirname, 'build/index.html'));
-});
-
 app.use('/user', userRoutes);
 app.use('/resources', resourceRoutes);
 app.use('/paypal', paypalRoutes);

@@ -1,24 +1,25 @@
+const fs = require('fs');
 const express = require('express')
 const https = require('https');
 const appHttps = require('./app');
 const app = express();
 
-const key = fs.readFileSync(/*path to key*/);
-const cert = fs.readFileSync( /*path to cert*/ );
+const key = fs.readFileSync("/etc/letsencrypt/live/api.bestclosershow.com/privkey.pem");
+const cert = fs.readFileSync("/etc/letsencrypt/live/api.bestclosershow.com/fullchain.pem");
 
 const options = {
     cert: cert,
     key: key
 }
 
-https.createServer(options, appHttps).listen(443, () => console.log('Listening on port 443'));
+const serverHttps = https.createServer(options, appHttps);
 
 /*-------------------------------------------
 ------------SocketIO implementation ---------
 -------------------------------------------*/
 
 
-const io = require('socket.io')(server);
+const io = require('socket.io')(serverHttps);
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
@@ -75,3 +76,7 @@ app.use( (req, res) => {
 });
 
 app.listen(80, ()=> console.log(`Listening on port 80`));
+
+serverHttps.listen(443, () => {
+        console.log("Listening on port 443");
+});

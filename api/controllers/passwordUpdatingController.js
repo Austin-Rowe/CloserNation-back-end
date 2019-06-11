@@ -9,7 +9,6 @@ AWS.config.loadFromPath('./config.json');
 
 exports.password_request_email = (req, res) => {
     const { email } = req.params;
-    console.log("Got request for reset token");
     User.findOne({email: email})
     .exec()
     .then(user => {
@@ -18,7 +17,6 @@ exports.password_request_email = (req, res) => {
                 message: "No user found, try another email."
             });
         } else {
-            console.log("Found user for reset req");
             const token = jwt.sign(
                 {
                     _id: user._id,
@@ -39,9 +37,9 @@ exports.password_request_email = (req, res) => {
                         Html: {
                             Charset: "UTF-8",
                             Data: `
-                                <h1 style="text-align: center;">Reset ${user.userName} Account Password for CloserNationShow.com</h1>
+                                <h1 style="text-align: center;">Reset ${user.userName} Account Password for BestCloserShow.com</h1>
                                 <h2 style="text-align: center; color: grey;">If you did not request this password reset ignore this email.</h2>
-                                <form id="change-password" action="http://localhost:3000/change-password" method="post" style="text-align: center;">
+                                <form id="change-password" action="https://api.bestclosershow.com/change-password" method="post" style="text-align: center;">
                                     Put in new password in both fields.
                                     <input name="password" style="width: 290px; height: 20px; display: block; margin: 5px auto; align-content: center; padding: 0 5px; border-radius: 100px; border: 1px solid grey;" type="password" placeholder="Password">
                                     <input name="confirmPassword" style="width: 290px; height: 20px; display: block; margin: 5px auto; align-content: center; padding: 0 5px; border-radius: 100px; border: 1px solid grey;" type="password" placeholder="Confirm Password">
@@ -56,11 +54,10 @@ exports.password_request_email = (req, res) => {
                         Data: 'Reset BestCloserShow.com Password'
                     }
                 },
-                Source: 'dnr@closernation.awsapps.com',
+                Source: 'do-not-reply@bestclosershow.com',
             };
 
             const sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(emailParams).promise();
-            console.log("sendPromise: " + sendPromise);
             sendPromise
             .then(data => {
                 res.status(200).json({
@@ -84,7 +81,7 @@ exports.password_update = (req, res) => {
     try{
         const decodedToken = jwt.verify(token, process.env.JWT_KEY);
         if(password !== confirmPassword){
-            res.status(401).json("Passwords Dont Match");
+            res.status(401).json("Passwords Dont Match. Please return to email and retry.");
         } else {
             bcrypt.hash(password, 10, (err, hash) => {
                 if(err){
@@ -92,7 +89,7 @@ exports.password_update = (req, res) => {
                         error: "Error hashing password. Please return to email and retry."
                     });
                 } else {
-                    User.update({_id: decodedToken._id}, {password: hash, passwordNonHash: password})
+                    User.update({_id: decodedToken._id}, {password: hash})
                     .exec()
                     .then(result => {
                         res.status(200).json({
@@ -100,7 +97,6 @@ exports.password_update = (req, res) => {
                         });
                     })
                     .catch(err => {
-                        console.log(err);
                         res.status(500).json({
                             error: "Error updating database"
                         });
