@@ -1,7 +1,17 @@
-const http = require('http'); 
-const app = require('./app');
-const port = process.env.PORT;
-const server = http.createServer(app);
+const express = require('express')
+const https = require('https');
+const appHttps = require('./app');
+const app = express();
+
+const key = fs.readFileSync(/*path to key*/);
+const cert = fs.readFileSync( /*path to cert*/ );
+
+const options = {
+    cert: cert,
+    key: key
+}
+
+https.createServer(options, appHttps).listen(443, () => console.log('Listening on port 443'));
 
 /*-------------------------------------------
 ------------SocketIO implementation ---------
@@ -60,4 +70,8 @@ io.on('connection', (socket) => {
 ----------------End of Implementation ---
 ---------------------------------------*/
 
-server.listen(port);
+app.use( (req, res) => {
+    res.redirect('https://' + req.headers.host + req.url);
+});
+
+app.listen(80, ()=> console.log(`Listening on port 80`));

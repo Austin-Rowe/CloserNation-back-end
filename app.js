@@ -2,6 +2,7 @@ require('dotenv/config');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const userRoutes = require('./api/routes/user');
 const resourceRoutes = require('./api/routes/resources');
@@ -20,6 +21,11 @@ app.use((req, res, next) => {
         return res.status(200).json({});
     }
     next();
+});
+
+app.use(express.static(path.join(__dirname, 'build')));
+app.get('/', res => {
+    res.sendFile(path.join(__dirname, 'build/index.html'));
 });
 
 app.use('/user', userRoutes);
