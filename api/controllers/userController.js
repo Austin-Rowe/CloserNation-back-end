@@ -89,8 +89,8 @@ exports.user_login = (req, res) => {
                                     email: username.email,
                                     userName: username.userName,
                                     _id: username._id,
-                                    paidSubscription: username.paidSubscription,
-                                    admin: username.admin
+                                    admin: username.admin,
+                                    paidSubscription: username.paidSubscription
                                 }, 
                                 process.env.JWT_KEY, 
                                 {
@@ -129,8 +129,8 @@ exports.user_login = (req, res) => {
                             email: user.email,
                             userName: user.userName,
                             _id: user._id,
-                            paidSubscription: user.paidSubscription,
-                            admin: user.admin
+                            admin: user.admin,
+                            paidSubscription: user.paidSubscription
                         }, 
                         process.env.JWT_KEY, 
                         {
@@ -141,7 +141,7 @@ exports.user_login = (req, res) => {
                         message: "Auth successful",
                         token: token,
                         admin: user.admin,
-                        paidSubscription: username.paidSubscription
+                        paidSubscription: user.paidSubscription
                     });
                 } else {
                     res.status(403).json({
