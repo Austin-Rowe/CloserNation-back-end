@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 var ipn_pal = require('ipn-pal');
+const mongoose = require('mongoose');
+
 
 const User = require('../models/userModel');
+const IPN = require('../models/ipnModel');
 
 
 
-router.use(ipn_pal.validator({ path: "/ipn", sandbox: false }, (err, body) => {
-    // recurring_payment_id
+router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
     if(!err){
         let subscribed;
         const { txn_type, payment_status, recurring_payment_id } = body;
@@ -75,6 +77,16 @@ router.use(ipn_pal.validator({ path: "/ipn", sandbox: false }, (err, body) => {
                 });
             }
         }
+        const ipn = new IPN({
+            _id: new mongoose.Types.ObjectId(),
+            ipn: body
+        });
+    
+        ipn.save().then(result => {
+            console.log('ipn saved');
+        }).catch(err => {
+            console.log('ipn failure'); 
+        });
     } else {
         console.log(err);
     }
