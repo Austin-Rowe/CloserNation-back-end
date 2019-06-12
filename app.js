@@ -9,6 +9,8 @@ const resourceRoutes = require('./api/routes/resources');
 const paypalRoutes = require('./api/routes/paypal');
 const ipnRoute = require('./api/routes/ipn');
 const changePasswordRoute = require('./api/routes/changePassword');
+const seeIpnRoute = require('./api/routes/seeIpn');
+
 
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -28,6 +30,7 @@ app.use('/resources', resourceRoutes);
 app.use('/paypal', paypalRoutes);
 app.use('/ipn', ipnRoute);
 app.use('/change-password', changePasswordRoute);
+app.use('/see-ipn', seeIpnRoute);
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
