@@ -12,7 +12,7 @@ const IPN = require('../models/ipnModel');
 router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
     if(!err){
         let subscribed;
-        const { txn_type, payment_status, recurring_payment_id } = body;
+        const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = body;
         switch(txn_type){
             case "merch_pmt": 
                 subscribed = true; 
@@ -53,7 +53,7 @@ router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
             default: subscribed = null;
         }
         if(subscribed){
-            if(payment_status === "Completed" || payment_status === "Processed"){
+            if(payment_status === "Completed" || payment_status === "Processed" || initial_payment_status === "Completed" || initial_payment_status === "Processed"){
                 if(subscribed !== null){
                     User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed, mostRecentIpnMessage: body})
                     .exec()
