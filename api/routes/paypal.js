@@ -59,7 +59,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                                 'Prefer': 'return=representation',
                                             },
                                             'body': JSON.stringify({
-                                                plan_id: "P-73X22587DB470064RLT7625Q",
+                                                plan_id: "P-6Y944315RY1987319LUAWGJQ",
                                                 subscriber: {
                                                     name: {
                                                         given_name: user.firstName,
@@ -124,7 +124,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                         'Prefer': 'return=representation',
                                     },
                                     'body': JSON.stringify({
-                                        plan_id: "P-73X22587DB470064RLT7625Q",
+                                        plan_id: "P-6Y944315RY1987319LUAWGJQ",
                                         subscriber: {
                                             name: {
                                                 given_name: user.firstName,
