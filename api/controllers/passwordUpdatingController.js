@@ -39,7 +39,7 @@ exports.password_request_email = (req, res) => {
                             Data: `
                                 <h1 style="text-align: center;">Reset ${user.userName} Account Password for BestCloserShow.com</h1>
                                 <h2 style="text-align: center; color: grey;">If you did not request this password reset ignore this email.</h2>
-                                <form id="change-password" action="https://api.bestclosershow.com/change-password" method="post" style="text-align: center;">
+                                <form id="change-password" action="https://api.bestclosershow.com/password-reset-request" method="post" style="text-align: center;">
                                     Put in new password in both fields.
                                     <input name="password" style="width: 290px; height: 20px; display: block; margin: 5px auto; align-content: center; padding: 0 5px; border-radius: 100px; border: 1px solid grey;" type="password" placeholder="Password">
                                     <input name="confirmPassword" style="width: 290px; height: 20px; display: block; margin: 5px auto; align-content: center; padding: 0 5px; border-radius: 100px; border: 1px solid grey;" type="password" placeholder="Confirm Password">

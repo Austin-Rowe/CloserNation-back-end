@@ -29,7 +29,7 @@ app.use('/user', userRoutes);
 app.use('/resources', resourceRoutes);
 app.use('/paypal', paypalRoutes);
 app.use('/ipn', ipnRoute);
-app.use('/change-password', changePasswordRoute);
+app.use('/password-reset-request', changePasswordRoute);
 app.use('/see-ipn', seeIpnRoute);
 
 app.use((req, res, next) => {
