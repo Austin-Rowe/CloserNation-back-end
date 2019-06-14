@@ -10,6 +10,18 @@ const IPN = require('../models/ipnModel');
 
 
 router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
+    const ipn = new IPN({
+        _id: new mongoose.Types.ObjectId(),
+        ipn: body
+    });
+
+    ipn.save().then(result => {
+        console.log('ipn saved');
+    }).catch(err => {
+        console.log('ipn failure'); 
+    });
+
+    
     if(!err){
         let subscribed;
         const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = body;
@@ -53,7 +65,7 @@ router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
             default: subscribed = null;
         }
         if(subscribed){
-            if(payment_status === "Completed" || payment_status === "Processed" || initial_payment_status === "Completed" || initial_payment_status === "Processed"){
+            if(payment_status === "Completed" || payment_status === "Processed"){
                 if(subscribed !== null){
                     User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed, mostRecentIpnMessage: body})
                     .exec()
@@ -77,16 +89,6 @@ router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
                 });
             }
         }
-        const ipn = new IPN({
-            _id: new mongoose.Types.ObjectId(),
-            ipn: body
-        });
-    
-        ipn.save().then(result => {
-            console.log('ipn saved');
-        }).catch(err => {
-            console.log('ipn failure'); 
-        });
     } else {
         console.log(err);
     }
