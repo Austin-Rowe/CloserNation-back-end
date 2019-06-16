@@ -89,7 +89,7 @@ router.post('/', (req, res, next) => {
                             });
                         }
                     } 
-                } else {
+                } else if(!subscribed) {
                     if(subscribed !== null){
                         User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed, mostRecentIpnMessage: body})
                         .exec()
@@ -100,6 +100,15 @@ router.post('/', (req, res, next) => {
                             console.log(err);
                         });
                     }
+                } else {
+                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {mostRecentIpnMessage: body})
+                    .exec()
+                    .then(result => {
+                        console.log(result);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
                 }
             } else if (body === "INVALID") {
                 console.error(`Recieved "INVALID" response for IPN from paypal`);
