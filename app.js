@@ -15,6 +15,7 @@ const seeIpnRoute = require('./api/routes/seeIpn');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use('/ipn', ipnRoute);
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -28,7 +29,6 @@ app.use((req, res, next) => {
 app.use('/user', userRoutes);
 app.use('/resources', resourceRoutes);
 app.use('/paypal', paypalRoutes);
-app.use('/ipn', ipnRoute);
 app.use('/password-reset-request', changePasswordRoute);
 app.use('/see-ipn', seeIpnRoute);
 

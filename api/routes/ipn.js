@@ -10,6 +10,17 @@ const IPN = require('../models/ipnModel');
 
 
 router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
+    const ipn = new IPN({
+        _id: new mongoose.Types.ObjectId(),
+        ipn: body
+    });
+
+    ipn.save().then(result => {
+        console.log('ipn saved');
+    }).catch(err => {
+        console.log('ipn store in DB failure'); 
+    });
+
     if(!err){
         let subscribed;
         const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = body;
@@ -77,16 +88,6 @@ router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
                 });
             }
         }
-        const ipn = new IPN({
-            _id: new mongoose.Types.ObjectId(),
-            ipn: body
-        });
-    
-        ipn.save().then(result => {
-            console.log('ipn saved');
-        }).catch(err => {
-            console.log('ipn failure'); 
-        });
     } else {
         console.log(err);
     }
