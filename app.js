@@ -7,15 +7,13 @@ const path = require('path');
 const userRoutes = require('./api/routes/user');
 const resourceRoutes = require('./api/routes/resources');
 const paypalRoutes = require('./api/routes/paypal');
-const ipnRoute = require('./api/routes/ipn');
 const changePasswordRoute = require('./api/routes/changePassword');
 const seeIpnRoute = require('./api/routes/seeIpn');
-
+const ipnRoute = require('./api/routes/ipn');
 
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use('/ipn', ipnRoute);
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -31,6 +29,8 @@ app.use('/resources', resourceRoutes);
 app.use('/paypal', paypalRoutes);
 app.use('/password-reset-request', changePasswordRoute);
 app.use('/see-ipn', seeIpnRoute);
+app.use('/ipn', ipnRoute);
+
 
 app.use((req, res, next) => {
     const error = new Error('Not found');

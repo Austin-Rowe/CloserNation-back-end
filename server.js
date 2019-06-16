@@ -31,10 +31,8 @@ mongoose.connect(
 );
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
 
     socket.on('post message', (obj) => {
-        console.log('user attempting to post message');
         const {token} = obj;
         try{
             const decoded = jwt.verify(token, process.env.JWT_KEY);
@@ -49,7 +47,6 @@ io.on('connection', (socket) => {
                         socket.emit('err', 'message must be less than 500 characters');
                     } else {
                         io.emit('new message', {message: obj.message, userName: decoded.userName});
-                        console.log('message posted: ' + obj.message);
                     }
                 } else {
                     socket.emit('err', 'User currently muted');
@@ -63,8 +60,6 @@ io.on('connection', (socket) => {
             socket.emit('err', 'invalid token');
         }
     });
-
-    socket.on('disconnect', () => console.log('a user disconnected'));
 });
 
 /*-------------------------------------
