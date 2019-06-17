@@ -11,6 +11,146 @@ const IPN = require('../models/ipnModel');
 router.post('/', (req, res, next) => {
     //Initial response to paypal to verify endpoint
     res.status(200).end();
+    
+    console.log("Saving IPN to DB");
+    const ipn = new IPN({
+        _id: new mongoose.Types.ObjectId(),
+        ipn: req.body
+    });
+    ipn.save().catch(err => {
+        console.error(`Failed to store IPN in DB: ${err}`); 
+    });
+
+
+    //Validate IPN is from paypal
+    let ipnTransactionMessage = req.body;
+    let formUrlEncodedBody = querystring.stringify(ipnTransactionMessage);
+    let verificationBody = `cmd=_notify-validate&${formUrlEncodedBody}`;
+
+    let options = {
+        method: "POST",
+        uri: "https://ipnpb.paypal.com/cgi-bin/webscr",
+        body: verificationBody,
+    };
+
+    // POST verification IPN data to paypal to validate.
+    request(options, (error, response, body) => {
+        console.log("Validating IPN legitimacy");
+        if (!error && response.statusCode == 200) {
+            if (body === "VERIFIED") {
+                console.log("Valid IPN");
+                let subscribed;
+                const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = req.body;
+                switch(txn_type){
+                    case "merch_pmt": 
+                        subscribed = true; 
+                        break;
+                    case "subscr_payment": 
+                        subscribed = true; 
+                        break;
+                    case "subscr_signup": 
+                        subscribed = true; 
+                        break;
+                    case "recurring_payment": 
+                        subscribed = true; 
+                        break;
+                    case "recurring_payment_profile_created":
+                        subscribed = true;
+                        break;
+                    case "recurring_payment_failed":
+                        subscribed = false;
+                        break;
+                    case "recurring_payment_profile_cancel":
+                        subscribed = false;
+                        break; 
+                    case "recurring_payment_suspended":
+                        subscribed = false;
+                        break; 
+                    case "recurring_payment_suspended_due_to_max_failed_payment":
+                        subscribed = false;
+                        break; 
+                    case "subscr_cancel":
+                        subscribed = false;
+                        break;
+                    case "subscr_failed":
+                        subscribed = false;
+                        break;
+                    case "mp_cancel": 
+                        subscribed = false; 
+                        break;
+                    default: console.log(`Unforseen IPN txn_type field: ${txn_type}`);
+                }
+                if(subscribed === true){
+                    if(payment_status === "Completed" || initial_payment_status === "Completed"){
+                        User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: true, mostRecentIpnMessage: req.body})
+                        .exec()
+                        .then(result => {
+                            console.log("User account updated with IPN to set paidSubscription field true");
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        });
+                    } 
+                } else if(subscribed === false) {
+                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: false, mostRecentIpnMessage: req.body})
+                    .exec()
+                    .then(result => {
+                        console.log("User account updated with IPN making paidSubscription field false");
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                } else {
+                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {mostRecentIpnMessage: req.body})
+                    .exec()
+                    .then(result => {
+                        console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed}`);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                }
+            } else if (body === "INVALID") {
+                console.error(`Recieved "INVALID" response for IPN from paypal meaning IPN might not be sent from paypal`);
+            } else {
+                console.error("Unexpected reponse body trying to validate ipn legitimacy.");
+            }
+        } else {
+            console.error(error);
+            console.log(body);
+        }
+    });
+});
+
+
+
+
+module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+/* const express = require('express');
+const router = express.Router();
+const request = require('request');
+const querystring = require('querystring');
+const mongoose = require('mongoose');
+
+const User = require('../models/userModel');
+const IPN = require('../models/ipnModel');
+
+
+router.post('/', (req, res, next) => {
+    //Initial response to paypal to verify endpoint
+    res.status(200).end();
 
     //Validate IPN is from paypal
     let ipnTransactionMessage = req.body;
@@ -126,7 +266,7 @@ router.post('/', (req, res, next) => {
 
 
 
-module.exports = router;
+module.exports = router; */
 
 /* const express = require('express');
 const router = express.Router();
