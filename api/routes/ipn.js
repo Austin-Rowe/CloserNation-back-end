@@ -91,7 +91,14 @@ router.post('/', (req, res, next) => {
                             console.log(err);
                         });
                     } else {
-                        console.log(`Subscribed was true but had no payment/initial_payment status. txn_type: ${txn_type}`)
+                        User.update({paypalRecurringPaymentId: recurring_payment_id}, {mostRecentIpnMessage: req.body})
+                        .exec()
+                        .then(result => {
+                            console.log(`Subscribed was true but had no payment/initial_payment status so only updated mostRecentIpnMessage. txn_type: ${txn_type}`);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        });
                     }
                 } else if(subscribed === false) {
                     User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: false, mostRecentIpnMessage: req.body})
