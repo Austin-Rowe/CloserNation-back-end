@@ -85,17 +85,19 @@ router.post('/', (req, res, next) => {
                         User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: true, mostRecentIpnMessage: req.body})
                         .exec()
                         .then(result => {
-                            console.log("User account updated with IPN to set paidSubscription field true");
+                            console.log(`User account updated with IPN to set paidSubscription field true. txn_type: ${txn_type}`);
                         })
                         .catch(err => {
                             console.log(err);
                         });
-                    } 
+                    } else {
+                        console.log(`Subscribed was true but had no payment/initial_payment status. txn_type: ${txn_type}`)
+                    }
                 } else if(subscribed === false) {
                     User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: false, mostRecentIpnMessage: req.body})
                     .exec()
                     .then(result => {
-                        console.log("User account updated with IPN making paidSubscription field false");
+                        console.log(`User account updated with IPN making paidSubscription field false. txn_type: ${txn_type}`);
                     })
                     .catch(err => {
                         console.log(err);
@@ -104,7 +106,7 @@ router.post('/', (req, res, next) => {
                     User.update({paypalRecurringPaymentId: recurring_payment_id}, {mostRecentIpnMessage: req.body})
                     .exec()
                     .then(result => {
-                        console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed}`);
+                        console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed} txn_type: ${txn_type}`);
                     })
                     .catch(err => {
                         console.log(err);
