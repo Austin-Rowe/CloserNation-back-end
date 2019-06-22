@@ -39,19 +39,24 @@ exports.password_request_email = (req, res) => {
                             Data: `
                                 <h1 style="text-align: center;">Reset ${user.userName} Account Password for BestCloserShow.com</h1>
                                 <h2 style="text-align: center; color: grey;">If you did not request this password reset ignore this email.</h2>
-                                <form id="change-password" action="https://api.bestclosershow.com/password-reset-request" method="post" style="text-align: center;">
-                                    Put in new password in both fields.
-                                    <input name="password" style="width: 290px; height: 20px; display: block; margin: 5px auto; align-content: center; padding: 0 5px; border-radius: 100px; border: 1px solid grey;" type="password" placeholder="Password">
-                                    <input name="confirmPassword" style="width: 290px; height: 20px; display: block; margin: 5px auto; align-content: center; padding: 0 5px; border-radius: 100px; border: 1px solid grey;" type="password" placeholder="Confirm Password">
-                                    <input name="token" type="hidden"  value=${token}>
-                                    <input id="submit" style="cursor: pointer; width: 300px; height: 30px; display: block; margin: 5px auto; align-content: center; border-radius: 100px; border: 0; background-color: blue; color: white; font-weight: bold;" type="submit" value="Update Password">
-                                </form>
+                                <a style="display: block;
+                                    background: blue;
+                                    color: white;
+                                    font-weight: bold;
+                                    width: 275px;
+                                    text-align: center;
+                                    padding: 10px 0;
+                                    border-radius: 100px;
+                                    text-decoration: none;
+                                    margin: 5px auto;" href="https://bestclosershow.com/RESET-PASSWORD/${token}/${user.userName}">
+                                        Click Here to Reset Password
+                                </a>
                             `
                         }
                     },
                     Subject: {
                         Charset: 'UTF-8',
-                        Data: 'Reset BestCloserShow.com Password'
+                        Data: 'Reset Your BestCloserShow.com Account Password'
                     }
                 },
                 Source: 'do-not-reply@bestclosershow.com',
