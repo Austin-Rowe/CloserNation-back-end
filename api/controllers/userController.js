@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 exports.user_signup = (req, res) => {
-    let {email, userName, password, firstName, lastName} = req.body;
+    let {email, userName, password, firstName, lastName, promoCode } = req.body;
     email = email.toLowerCase();
     User.findOne({email: email})
     .exec()
@@ -16,8 +16,8 @@ exports.user_signup = (req, res) => {
         } else {
             User.findOne({userName: userName})
             .exec()
-            .then(result => {
-                if(result){
+            .then(result1 => {
+                if(result1){
                     res.status(406).json({message: "Email or username already taken"})
                 } else {
                     bcrypt.hash(password, 10, (err, hash) => {
@@ -26,15 +26,39 @@ exports.user_signup = (req, res) => {
                                 error: err
                             });
                         } else {
-                            const user = new User({
-                                _id: new mongoose.Types.ObjectId(),
-                                email: email,
-                                userName: userName,
-                                password: hash,
-                                firstName: firstName,
-                                lastName: lastName
-                            });
-                            user.save().then(result => {
+                            let user;
+                            if(promoCode === "#CloserTrial"){
+                                const token = jwt.sign(
+                                    {
+                                        email: username.email,
+                                        userName: username.userName,
+                                        _id: username._id,
+                                    }, 
+                                    process.env.JWT_KEY, 
+                                    {
+                                        expiresIn: "24h"
+                                    }
+                                );
+                                user = new User({
+                                    _id: new mongoose.Types.ObjectId(),
+                                    email: email,
+                                    userName: userName,
+                                    password: hash,
+                                    firstName: firstName,
+                                    lastName: lastName,
+                                    freeDayToken: token
+                                }); 
+                            } else {
+                                user = new User({
+                                    _id: new mongoose.Types.ObjectId(),
+                                    email: email,
+                                    userName: userName,
+                                    password: hash,
+                                    firstName: firstName,
+                                    lastName: lastName
+                                });
+                            }
+                            user.save().then(saveResult => {
                                 res.status(200).json({
                                     message: "User created"
                                 });
@@ -90,7 +114,8 @@ exports.user_login = (req, res) => {
                                     userName: username.userName,
                                     _id: username._id,
                                     admin: username.admin,
-                                    paidSubscription: username.paidSubscription
+                                    paidSubscription: username.paidSubscription,
+                                    freeDayToken: username.freeDayToken
                                 }, 
                                 process.env.JWT_KEY, 
                                 {
@@ -101,7 +126,8 @@ exports.user_login = (req, res) => {
                                 message: "Auth successful",
                                 token: token,
                                 admin: username.admin,
-                                paidSubscription: username.paidSubscription
+                                paidSubscription: username.paidSubscription,
+                                freeDayToken: username.freeDayToken
                             });
                         } else {
                             res.status(403).json({
@@ -130,7 +156,8 @@ exports.user_login = (req, res) => {
                             userName: user.userName,
                             _id: user._id,
                             admin: user.admin,
-                            paidSubscription: user.paidSubscription
+                            paidSubscription: user.paidSubscription,
+                            freeDayToken: user.freeDayToken
                         }, 
                         process.env.JWT_KEY, 
                         {
@@ -141,7 +168,8 @@ exports.user_login = (req, res) => {
                         message: "Auth successful",
                         token: token,
                         admin: user.admin,
-                        paidSubscription: user.paidSubscription
+                        paidSubscription: user.paidSubscription,
+                        freeDayToken: user.freeDayToken
                     });
                 } else {
                     res.status(403).json({
@@ -343,3 +371,35 @@ exports.user_get_all_muted = (req, res) => {
         })
     }
 }
+
+exports.user_apply_promo_code = (req, res) => {
+    const { promoCode } = req.body;
+    if(req.decodedTokenUserData.freeDayToken === true && promoCode === "#CloserTrial"){
+        const token = jwt.sign(
+            {
+                email: req.decodedTokenUserData.email,
+                userName: req.decodedTokenUserData.userName,
+                _id: req.decodedTokenUserData._id,
+            }, 
+            process.env.JWT_KEY, 
+            {
+                expiresIn: "24h"
+            }
+        );
+        User.update({_id: req.decodedTokenUserData._id}, {freeDayToken: token})
+        .exec()
+        .then(result => {
+            res.status(200).json({
+                message: "Valid Promo Code",
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+    } else {
+        res.status(401).json({
+            message: "Free day promo has already been used with this account or code is invalid."
+        });
+    }
+};

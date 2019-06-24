@@ -12,7 +12,8 @@ const userSchema = mongoose.Schema({
     banned: {type: Boolean, default: false},
     canChat: {type: Boolean, default: true},
     paypalRecurringPaymentId: {type: String, default: 'no_id'},
-    mostRecentIpnMessage: {type: Object}
+    mostRecentIpnMessage: {type: Object},
+    freeDayToken: {default: true}
 });
 
 module.exports = mongoose.model('User', userSchema);

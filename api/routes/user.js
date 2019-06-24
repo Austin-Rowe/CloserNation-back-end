@@ -13,6 +13,7 @@ router.get('/muted-users', checkAuth, UserController.user_get_all_muted);
 router.patch('/:userId', checkAuth, UserController.user_patch);
 router.delete('/', checkAuth, UserController.user_delete);
 router.patch('/alter-permissions/:userName', checkAuth, UserController.user_alter_permissions);
+router.post('/apply-promo', checkAuth, UserController.user_apply_promo_code);
 
 router.get('/all-users', checkAuth, (req, res, next) => {
     if(req.decodedTokenUserData.admin){

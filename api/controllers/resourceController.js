@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const Resource = require('../models/resourceModel');
+const User = require('../models/userModel');
 
 exports.resource_getAll = (req, res) => {
     //Change to true to ensure subscribers only can access resources before going to production 
@@ -12,12 +14,43 @@ exports.resource_getAll = (req, res) => {
             if(docs.length >= 1){
                 res.status(200).json({docs});
             } else {
-            res.status(404).json({message: 'No resources!'}); 
+                res.status(404).json({message: 'No resources!'}); 
             }
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({error: err});
+        });
+    } else if(typeof(req.decodedTokenUserData.freeDayToken) === "string" ){
+        jwt.verify(req.decodedTokenUserData.freeDayToken, process.env.JWT_KEY, ( err, decoded) => {
+            if(err){
+                User.update({_id: req.decodedTokenUserData._id}, {freeDayToken: false})
+                .exec()
+                .then(result => {
+                    res.status(401).json({
+                        message: "Free Trial Expired",
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).json(err);
+                });
+            } else {
+                Resource.find()
+                .select('title URL description isStreamLink _id')
+                .exec()
+                .then(docs => {
+                    if(docs.length >= 1){
+                        res.status(200).json({docs});
+                    } else {
+                        res.status(404).json({message: 'No resources!'}); 
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).json({error: err});
+                });
+            }
         });
     } else {
         res.status(403).json({
