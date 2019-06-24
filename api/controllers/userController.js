@@ -30,9 +30,8 @@ exports.user_signup = (req, res) => {
                             if(promoCode === "#CloserTrial"){
                                 const token = jwt.sign(
                                     {
-                                        email: username.email,
-                                        userName: username.userName,
-                                        _id: username._id,
+                                        email: email,
+                                        userName: userName
                                     }, 
                                     process.env.JWT_KEY, 
                                     {
@@ -46,8 +45,7 @@ exports.user_signup = (req, res) => {
                                     password: hash,
                                     firstName: firstName,
                                     lastName: lastName,
-                                    freeDayToken: token,
-                                    freeDayTokenUsed: true
+                                    freeDayToken: token
                                 }); 
                             } else {
                                 user = new User({
