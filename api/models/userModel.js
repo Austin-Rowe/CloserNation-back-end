@@ -13,7 +13,8 @@ const userSchema = mongoose.Schema({
     canChat: {type: Boolean, default: true},
     paypalRecurringPaymentId: {type: String, default: 'no_id'},
     mostRecentIpnMessage: {type: Object},
-    freeDayToken: {default: true}
+    freeDayToken: {type: String, default: ''},
+    freeDayTokenUsed: {type: Boolean, default: false}
 });
 
 module.exports = mongoose.model('User', userSchema);

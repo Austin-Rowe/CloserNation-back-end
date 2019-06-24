@@ -46,7 +46,8 @@ exports.user_signup = (req, res) => {
                                     password: hash,
                                     firstName: firstName,
                                     lastName: lastName,
-                                    freeDayToken: token
+                                    freeDayToken: token,
+                                    freeDayTokenUsed: true
                                 }); 
                             } else {
                                 user = new User({
@@ -115,7 +116,8 @@ exports.user_login = (req, res) => {
                                     _id: username._id,
                                     admin: username.admin,
                                     paidSubscription: username.paidSubscription,
-                                    freeDayToken: username.freeDayToken
+                                    freeDayToken: username.freeDayToken,
+                                    freeDayTokenUsed: username.freeDayTokenUsed
                                 }, 
                                 process.env.JWT_KEY, 
                                 {
@@ -127,7 +129,8 @@ exports.user_login = (req, res) => {
                                 token: token,
                                 admin: username.admin,
                                 paidSubscription: username.paidSubscription,
-                                freeDayToken: username.freeDayToken
+                                freeDayToken: username.freeDayToken,
+                                freeDayTokenUsed: username.freeDayTokenUsed
                             });
                         } else {
                             res.status(403).json({
@@ -157,7 +160,8 @@ exports.user_login = (req, res) => {
                             _id: user._id,
                             admin: user.admin,
                             paidSubscription: user.paidSubscription,
-                            freeDayToken: user.freeDayToken
+                            freeDayToken: user.freeDayToken,
+                            freeDayTokenUsed: user.freeDayTokenUsed
                         }, 
                         process.env.JWT_KEY, 
                         {
@@ -169,7 +173,8 @@ exports.user_login = (req, res) => {
                         token: token,
                         admin: user.admin,
                         paidSubscription: user.paidSubscription,
-                        freeDayToken: user.freeDayToken
+                        freeDayToken: user.freeDayToken,
+                        freeDayTokenUsed: user.freeDayTokenUsed
                     });
                 } else {
                     res.status(403).json({
@@ -374,7 +379,7 @@ exports.user_get_all_muted = (req, res) => {
 
 exports.user_apply_promo_code = (req, res) => {
     const { promoCode } = req.body;
-    if(req.decodedTokenUserData.freeDayToken === true && promoCode === "#CloserTrial"){
+    if(req.decodedTokenUserData.freeDayTokenUsed === false && promoCode === "#CloserTrial"){
         const token = jwt.sign(
             {
                 email: req.decodedTokenUserData.email,

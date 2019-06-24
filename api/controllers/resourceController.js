@@ -24,7 +24,7 @@ exports.resource_getAll = (req, res) => {
     } else if(typeof(req.decodedTokenUserData.freeDayToken) === "string" ){
         jwt.verify(req.decodedTokenUserData.freeDayToken, process.env.JWT_KEY, ( err, decoded) => {
             if(err){
-                User.update({_id: req.decodedTokenUserData._id}, {freeDayToken: false})
+                User.update({_id: req.decodedTokenUserData._id}, {freeDayTokenUsed: true})
                 .exec()
                 .then(result => {
                     res.status(401).json({
