@@ -31,7 +31,6 @@ app.use('/password-reset-request', changePasswordRoute);
 app.use('/see-ipn', seeIpnRoute);
 app.use('/ipn', ipnRoute);
 
-
 app.use((req, res, next) => {
     const error = new Error('Not found');
     error.status = 404;

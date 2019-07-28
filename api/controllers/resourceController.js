@@ -1,8 +1,38 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 const Resource = require('../models/resourceModel');
 const User = require('../models/userModel');
+
+exports.resource_serveVideo = (req, res) => {
+    const fileStats = fs.statSync(`../../../archives/${req.params.filename}`);
+    const fileSize = fileStats.size;
+    const range = req.headers.range;
+
+    if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
+        const chunksize = (end-start)+1;
+        const stream = fs.createReadStream(`../../../archives/${req.params.filename}`, {start, end});
+        const head = {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunksize,
+            'Content-Type': 'video/mp4',
+        }
+        res.writeHead(206, head);
+        stream.pipe(res);
+    } else {
+        const head = {
+            'Content-Length': fileSize,
+            'Content-Type': 'video/mp4',
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(`../../../archives/${req.params.filename}`).pipe(res);
+    }
+};
 
 exports.resource_getAll = (req, res) => {
     //Change to true to ensure subscribers only can access resources before going to production 
@@ -60,27 +90,36 @@ exports.resource_getAll = (req, res) => {
 };
 
 exports.resource_createNew = (req, res) => {
-    const {title, URL, description} = req.body;
+    const {title, description} = req.body;
     const creator_id = req.decodedTokenUserData._id;
     if(req.decodedTokenUserData.admin){
         const resource = new Resource({
             _id: new mongoose.Types.ObjectId(),
             title: title,
-            URL: URL,
+            URL: `https://api.bestclosershow.com/resources/`,
             description: description,
             creator_id: creator_id,
             isStreamLink: false
         });
-        resource.save().then(result => {
-            res.status(200).json({
-                message: "Resource created",
-                newResource: result
-            });
-        }).catch(err => {
-            res.status(500).json({
-                message: "Error adding resource",
-                error: err
-            });    
+
+        fs.writeFile(`../../../archives/${resource._id}.mp4`, req.file.buffer, ( err ) => {
+            if(err){
+                res.status(500).send({
+                    message: "Error saving file"
+                })
+            } else {
+                resource.save().then(result => {
+                    res.status(200).json({
+                        message: "Resource created",
+                        newResource: result
+                    });
+                }).catch(err => {
+                    res.status(500).json({
+                        message: "Error adding resource",
+                        error: err
+                    });    
+                });
+            }
         });
     } else {
         res.status(403).json({
