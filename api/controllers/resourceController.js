@@ -6,7 +6,7 @@ const Resource = require('../models/resourceModel');
 const User = require('../models/userModel');
 
 exports.resource_serveVideo = (req, res) => {
-    const fileStats = fs.statSync(`../../../archives/${req.params.filename}`);
+    const fileStats = fs.statSync(`/home/ubuntu/archives/${req.params.filename}`);
     const fileSize = fileStats.size;
     const range = req.headers.range;
 
@@ -15,7 +15,7 @@ exports.resource_serveVideo = (req, res) => {
         const start = parseInt(parts[0], 10);
         const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
         const chunksize = (end-start)+1;
-        const stream = fs.createReadStream(`../../../archives/${req.params.filename}`, {start, end});
+        const stream = fs.createReadStream(`/home/ubuntu/archives/${req.params.filename}`, {start, end});
         const head = {
             'Content-Range': `bytes ${start}-${end}/${fileSize}`,
             'Accept-Ranges': 'bytes',
@@ -30,7 +30,7 @@ exports.resource_serveVideo = (req, res) => {
             'Content-Type': 'video/mp4',
         };
         res.writeHead(200, head);
-        fs.createReadStream(`../../../archives/${req.params.filename}`).pipe(res);
+        fs.createReadStream(`/home/ubuntu/archives/${req.params.filename}`).pipe(res);
     }
 };
 
@@ -102,7 +102,7 @@ exports.resource_createNew = (req, res) => {
             isStreamLink: false
         });
 
-        fs.writeFile(`../../../archives/${resource._id}.mp4`, req.file.buffer, ( err ) => {
+        fs.writeFile(`/home/ubuntu/archives/${resource._id}.mp4`, req.file.buffer, ( err ) => {
             if(err){
                 res.status(500).send({
                     message: "Error saving file"
