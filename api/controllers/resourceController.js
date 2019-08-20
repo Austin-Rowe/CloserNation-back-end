@@ -96,30 +96,21 @@ exports.resource_createNew = (req, res) => {
         const resource = new Resource({
             _id: new mongoose.Types.ObjectId(),
             title: title,
-            URL: `https://api.bestclosershow.com/resources/`,
+            URL: `https://api.bestclosershow.com/resources/${req.file.filename}`,
             description: description,
             creator_id: creator_id,
             isStreamLink: false
         });
-
-        fs.writeFile(`/home/ubuntu/archives/${resource._id}.mp4`, req.file.buffer, ( err ) => {
-            if(err){
-                res.status(500).send({
-                    message: "Error saving file"
-                })
-            } else {
-                resource.save().then(result => {
-                    res.status(200).json({
-                        message: "Resource created",
-                        newResource: result
-                    });
-                }).catch(err => {
-                    res.status(500).json({
-                        message: "Error adding resource",
-                        error: err
-                    });    
-                });
-            }
+        resource.save().then(result => {
+            res.status(200).json({
+                message: "Resource created",
+                newResource: result
+            });
+        }).catch(err => {
+            res.status(500).json({
+                message: "Error adding resource",
+                error: err
+            });    
         });
     } else {
         res.status(403).json({
