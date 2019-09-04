@@ -132,7 +132,7 @@ exports.resource_createNew = (req, res) => {
     let thumbnail;
 
     if(req.files.video){
-        video = req.files.video.filename;
+        video = req.files.video[0].filename;
     } else if(!req.files.video){
         res.status(500).json({
             message: "Error adding resource",
@@ -141,7 +141,7 @@ exports.resource_createNew = (req, res) => {
     }
 
     if(req.files.thumbnail){
-        thumbnail = req.files.thumbnail.filename;
+        thumbnail = req.files.thumbnail[0].filename;
     } else if(!req.files.thumbnail){
         thumbnail = 'defaultThumbnail.jpg';
     }
