@@ -34,11 +34,47 @@ exports.resource_serveVideo = (req, res) => {
     }
 };
 
+exports.resource_serveImage = (req, res) => {
+    const fileStats = fs.statSync(`/home/ubuntu/images/${req.params.filename}`);
+    const fileSize = fileStats.size;
+    const range = req.headers.range;
+    let contentType;
+    
+    if(req.params.filename.includes('.jpg')){
+        contentType = 'image/jpeg'
+    } else if(req.params.filename.includes('.png')){
+        contentType = 'image/png'
+    }
+
+    if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
+        const chunksize = (end-start)+1;
+        const stream = fs.createReadStream(`/home/ubuntu/images/${req.params.filename}`, {start, end});
+        const head = {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunksize,
+            'Content-Type': contentType,
+        }
+        res.writeHead(206, head);
+        stream.pipe(res);
+    } else {
+        const head = {
+            'Content-Length': fileSize,
+            'Content-Type': contentType,
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(`/home/ubuntu/images/${req.params.filename}`).pipe(res);
+    }
+};
+
 exports.resource_getAll = (req, res) => {
     //Change to true to ensure subscribers only can access resources before going to production 
     if(req.decodedTokenUserData.paidSubscription){
         Resource.find()
-        .select('title URL description isStreamLink _id')
+        .select('title description isStreamLink _id fileNames showNumber date viewCount duration')
         .exec()
         .then(docs => {
             if(docs.length >= 1){
@@ -67,7 +103,7 @@ exports.resource_getAll = (req, res) => {
                 });
             } else {
                 Resource.find()
-                .select('title URL description isStreamLink _id')
+                .select('title description isStreamLink _id fileNames showNumber date viewCount duration')
                 .exec()
                 .then(docs => {
                     if(docs.length >= 1){
@@ -90,16 +126,39 @@ exports.resource_getAll = (req, res) => {
 };
 
 exports.resource_createNew = (req, res) => {
-    const {title, description} = req.body;
+    const {title, description, date, duration, showNumber } = req.body;
     const creator_id = req.decodedTokenUserData._id;
+    let video;
+    let thumbnail;
+
+    if(req.files.video){
+        video = req.files.video.filename;
+    } else if(!req.files.video){
+        res.status(500).json({
+            message: "Error adding resource",
+            err: 'No video file present'
+        });   
+    }
+
+    if(req.files.thumbnail){
+        thumbnail = req.files.thumbnail.filename;
+    } else if(!req.files.thumbnail){
+        thumbnail = 'defaultThumbnail.jpg';
+    }
+
     if(req.decodedTokenUserData.admin){
         const resource = new Resource({
             _id: new mongoose.Types.ObjectId(),
-            title: title,
-            URL: `https://api.bestclosershow.com/resources/${req.file.filename}`,
-            description: description,
-            creator_id: creator_id,
-            isStreamLink: false
+            title,
+            date,
+            description,
+            duration,
+            showNumber,
+            creator_id,
+            fileNames: {
+                video,
+                thumbnail
+            }
         });
         resource.save().then(result => {
             res.status(200).json({
