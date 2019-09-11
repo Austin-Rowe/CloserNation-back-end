@@ -3,13 +3,12 @@ const router = express.Router();
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        if(file.fieldname = 'thumbnail'){
-            cb(null, '/home/ubuntu//images/');
-        } else if(file.fieldname = 'video') {
-            cb(null, '/home/ubuntu/archives/');
-        } else {
-            console.log("Whilst trying to upload a file the fieldname was not one of the specified options.")
+        switch(file.fieldname){
+            case 'thumbnail': cb(null, '/home/ubuntu/images/'); break;
+            case 'video': cb(null, '/home/ubuntu/archives/'); break;
+            default: cb(null, '/home/ubuntu/images/');
         }
+        //cb(null, '/home/ubuntu/images/'); 
     },
     filename: (req, file, cb) => {
         switch(file.mimetype){

@@ -74,7 +74,7 @@ exports.resource_getAll = (req, res) => {
     //Change to true to ensure subscribers only can access resources before going to production 
     if(req.decodedTokenUserData.paidSubscription){
         Resource.find()
-        .select('title description isStreamLink _id fileNames showNumber date viewCount duration')
+        .select('URL title description isStreamLink _id fileNames showNumber date viewCount duration')
         .exec()
         .then(docs => {
             if(docs.length >= 1){
@@ -103,7 +103,7 @@ exports.resource_getAll = (req, res) => {
                 });
             } else {
                 Resource.find()
-                .select('title description isStreamLink _id fileNames showNumber date viewCount duration')
+                .select('URL title description isStreamLink _id fileNames showNumber date viewCount duration')
                 .exec()
                 .then(docs => {
                     if(docs.length >= 1){
@@ -133,13 +133,16 @@ exports.resource_createNew = (req, res) => {
 
     if(req.files.video){
         video = req.files.video[0].filename;
+        // fs.rename(`/home/ubuntu/images/${req.files.video[0].filename}`, `/home/ubuntu/archives/${req.files.video[0].filename}`, (err) => {
+        //     if(err){console.err(err)};
+        // });
     } else if(!req.files.video){
         res.status(500).json({
             message: "Error adding resource",
             err: 'No video file present'
         });   
     }
-
+    
     if(req.files.thumbnail){
         thumbnail = req.files.thumbnail[0].filename;
     } else if(!req.files.thumbnail){

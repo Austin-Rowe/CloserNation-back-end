@@ -35,7 +35,7 @@ exports.user_signup = (req, res) => {
                                     }, 
                                     process.env.JWT_KEY, 
                                     {
-                                        expiresIn: "24h"
+                                        expiresIn: "7d"
                                     }
                                 );
                                 user = new User({
