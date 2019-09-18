@@ -12,6 +12,7 @@ const userSchema = mongoose.Schema({
     banned: {type: Boolean, default: false},
     canChat: {type: Boolean, default: true},
     paypalRecurringPaymentId: {type: String, default: 'no_id'},
+    paypalRecurringPaymentIdArray: [String],
     mostRecentIpnMessage: {type: Object},
     freeDayToken: {type: String, default: ''},
     freeDayTokenUsed: {type: Boolean, default: false}

@@ -7,18 +7,40 @@ const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const IPN = require('../models/ipnModel');
 
+const updateUserIpnStatus = (subStatus, updateSubStatus) => {
+    if(updateSubStatus === true){
+        User.updateOne({ paypalRecurringPaymentIdArray: recurring_payment_id }, { paidSubscription: subStatus, mostRecentIpnMessage: req.body })
+        .exec()
+        .then(result => {
+            console.log(`User account updated with IPN to set paidSubscription field ${subStatus}. txn_type: ${txn_type}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    } else if(updateSubStatus === false){
+        User.updateOne({ paypalRecurringPaymentIdArray: recurring_payment_id }, { mostRecentIpnMessage: req.body })
+        .exec()
+        .then(result => {
+            console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed} txn_type: ${txn_type}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    }
+    
+};
+
 
 router.post('/', (req, res, next) => {
     //Initial response to paypal to verify endpoint
     res.status(200).end();
-    
-    console.log("Saving IPN to DB");
+
     const ipn = new IPN({
         _id: new mongoose.Types.ObjectId(),
         ipn: req.body
     });
     ipn.save().catch(err => {
-        console.error(`Failed to store IPN in DB: ${err}`); 
+        console.error(`Failed to store IPN in DB: ${err}`);
     });
 
 
@@ -41,18 +63,18 @@ router.post('/', (req, res, next) => {
                 console.log("Valid IPN");
                 let subscribed;
                 const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = req.body;
-                switch(txn_type){
-                    case "merch_pmt": 
-                        subscribed = true; 
+                switch (txn_type) {
+                    case "merch_pmt":
+                        subscribed = true;
                         break;
-                    case "subscr_payment": 
-                        subscribed = true; 
+                    case "subscr_payment":
+                        subscribed = true;
                         break;
-                    case "subscr_signup": 
-                        subscribed = true; 
+                    case "subscr_signup":
+                        subscribed = true;
                         break;
-                    case "recurring_payment": 
-                        subscribed = true; 
+                    case "recurring_payment":
+                        subscribed = true;
                         break;
                     case "recurring_payment_profile_created":
                         subscribed = true;
@@ -62,62 +84,34 @@ router.post('/', (req, res, next) => {
                         break;
                     case "recurring_payment_profile_cancel":
                         subscribed = false;
-                        break; 
+                        break;
                     case "recurring_payment_suspended":
                         subscribed = false;
-                        break; 
+                        break;
                     case "recurring_payment_suspended_due_to_max_failed_payment":
                         subscribed = false;
-                        break; 
+                        break;
                     case "subscr_cancel":
                         subscribed = false;
                         break;
                     case "subscr_failed":
                         subscribed = false;
                         break;
-                    case "mp_cancel": 
-                        subscribed = false; 
+                    case "mp_cancel":
+                        subscribed = false;
                         break;
                     default: console.log(`Unforseen IPN txn_type field: ${txn_type}`);
                 }
-                if(subscribed === true){
-                    if(payment_status === "Completed" || initial_payment_status === "Completed"){
-                        User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: true, mostRecentIpnMessage: req.body})
-                        .exec()
-                        .then(result => {
-                            console.log(`User account updated with IPN to set paidSubscription field true. txn_type: ${txn_type}`);
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        });
+                if (subscribed === true) {
+                    if (payment_status === "Completed" || initial_payment_status === "Completed") {
+                        updateUserIpnStatus(true, true);
                     } else {
-                        User.update({paypalRecurringPaymentId: recurring_payment_id}, {mostRecentIpnMessage: req.body})
-                        .exec()
-                        .then(result => {
-                            console.log(`Subscribed was true but had no payment/initial_payment status so only updated mostRecentIpnMessage. txn_type: ${txn_type}`);
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        });
+                        updateUserIpnStatus(true, false);
                     }
-                } else if(subscribed === false) {
-                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: false, mostRecentIpnMessage: req.body})
-                    .exec()
-                    .then(result => {
-                        console.log(`User account updated with IPN making paidSubscription field false. txn_type: ${txn_type}`);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
+                } else if (subscribed === false) {
+                    updateUserIpnStatus(false, true);
                 } else {
-                    User.update({paypalRecurringPaymentId: recurring_payment_id}, {mostRecentIpnMessage: req.body})
-                    .exec()
-                    .then(result => {
-                        console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed} txn_type: ${txn_type}`);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
+                    updateUserIpnStatus(false, false);
                 }
             } else if (body === "INVALID") {
                 console.error(`Recieved "INVALID" response for IPN from paypal meaning IPN might not be sent from paypal`);
@@ -181,23 +175,23 @@ router.post('/', (req, res, next) => {
                     ipn: req.body
                 });
                 ipn.save().catch(err => {
-                    console.error(`Failed to store IPN in DB: ${err}`); 
+                    console.error(`Failed to store IPN in DB: ${err}`);
                 });
 
                 let subscribed;
                 const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = req.body;
                 switch(txn_type){
-                    case "merch_pmt": 
-                        subscribed = true; 
+                    case "merch_pmt":
+                        subscribed = true;
                         break;
-                    case "subscr_payment": 
-                        subscribed = true; 
+                    case "subscr_payment":
+                        subscribed = true;
                         break;
-                    case "subscr_signup": 
-                        subscribed = true; 
+                    case "subscr_signup":
+                        subscribed = true;
                         break;
-                    case "recurring_payment": 
-                        subscribed = true; 
+                    case "recurring_payment":
+                        subscribed = true;
                         break;
                     case "recurring_payment_profile_created":
                         subscribed = true;
@@ -207,21 +201,21 @@ router.post('/', (req, res, next) => {
                         break;
                     case "recurring_payment_profile_cancel":
                         subscribed = false;
-                        break; 
+                        break;
                     case "recurring_payment_suspended":
                         subscribed = false;
-                        break; 
+                        break;
                     case "recurring_payment_suspended_due_to_max_failed_payment":
                         subscribed = false;
-                        break; 
+                        break;
                     case "subscr_cancel":
                         subscribed = false;
                         break;
                     case "subscr_failed":
                         subscribed = false;
                         break;
-                    case "mp_cancel": 
-                        subscribed = false; 
+                    case "mp_cancel":
+                        subscribed = false;
                         break;
                     default: subscribed = null;
                 }
@@ -237,7 +231,7 @@ router.post('/', (req, res, next) => {
                                 console.log(err);
                             });
                         }
-                    } 
+                    }
                 } else if(!subscribed) {
                     if(subscribed !== null){
                         User.update({paypalRecurringPaymentId: recurring_payment_id}, {paidSubscription: subscribed, mostRecentIpnMessage: body})
@@ -297,24 +291,24 @@ router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
     ipn.save().then(result => {
         console.log('ipn saved');
     }).catch(err => {
-        console.log('ipn store in DB failure'); 
+        console.log('ipn store in DB failure');
     });
 
     if(!err){
         let subscribed;
         const { txn_type, payment_status, recurring_payment_id, initial_payment_status } = body;
         switch(txn_type){
-            case "merch_pmt": 
-                subscribed = true; 
+            case "merch_pmt":
+                subscribed = true;
                 break;
-            case "subscr_payment": 
-                subscribed = true; 
+            case "subscr_payment":
+                subscribed = true;
                 break;
-            case "subscr_signup": 
-                subscribed = true; 
+            case "subscr_signup":
+                subscribed = true;
                 break;
-            case "recurring_payment": 
-                subscribed = true; 
+            case "recurring_payment":
+                subscribed = true;
                 break;
             case "recurring_payment_profile_created":
                 subscribed = true;
@@ -324,21 +318,21 @@ router.use(ipn_pal.validator({ path: "/", sandbox: false }, (err, body) => {
                 break;
             case "recurring_payment_profile_cancel":
                 subscribed = false;
-                break; 
+                break;
             case "recurring_payment_suspended":
                 subscribed = false;
-                break; 
+                break;
             case "recurring_payment_suspended_due_to_max_failed_payment":
                 subscribed = false;
-                break; 
+                break;
             case "subscr_cancel":
                 subscribed = false;
                 break;
             case "subscr_failed":
                 subscribed = false;
                 break;
-            case "mp_cancel": 
-                subscribed = false; 
+            case "mp_cancel":
+                subscribed = false;
                 break;
             default: subscribed = null;
         }

@@ -87,7 +87,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                                 const parsedBody = JSON.parse(body);
                                                 const approvalLinkObj = parsedBody.links.filter(linkObj => linkObj.rel === "approve")[0];
                                                 const approvalLink = approvalLinkObj.href;
-                                                User.update({_id: decodedTokenUserData._id}, {paypalRecurringPaymentId: parsedBody.id})
+                                                User.updateOne({_id: decodedTokenUserData._id}, {paypalRecurringPaymentId: parsedBody.id, $push: {paypalRecurringPaymentIdArray: parsedBody.id}})
                                                 .exec()
                                                 .then(result => {
                                                     res.status(200).json({
