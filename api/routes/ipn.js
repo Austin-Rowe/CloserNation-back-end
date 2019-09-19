@@ -7,9 +7,9 @@ const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const IPN = require('../models/ipnModel');
 
-const updateUserIpnStatus = (subStatus, updateSubStatus) => {
+const updateUserIpnStatus = (subStatus, updateSubStatus, recurringId) => {
     if(updateSubStatus === true){
-        User.updateOne({ paypalRecurringPaymentIdArray: recurring_payment_id }, { paidSubscription: subStatus, mostRecentIpnMessage: req.body })
+        User.updateOne({ paypalRecurringPaymentIdArray: recurringId }, { paidSubscription: subStatus, mostRecentIpnMessage: req.body })
         .exec()
         .then(result => {
             console.log(`User account updated with IPN to set paidSubscription field ${subStatus}. txn_type: ${txn_type}`);
@@ -18,7 +18,7 @@ const updateUserIpnStatus = (subStatus, updateSubStatus) => {
             console.log(err);
         });
     } else if(updateSubStatus === false){
-        User.updateOne({ paypalRecurringPaymentIdArray: recurring_payment_id }, { mostRecentIpnMessage: req.body })
+        User.updateOne({ paypalRecurringPaymentIdArray: recurringId }, { mostRecentIpnMessage: req.body })
         .exec()
         .then(result => {
             console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed} txn_type: ${txn_type}`);
@@ -104,14 +104,14 @@ router.post('/', (req, res, next) => {
                 }
                 if (subscribed === true) {
                     if (payment_status === "Completed" || initial_payment_status === "Completed") {
-                        updateUserIpnStatus(true, true);
+                        updateUserIpnStatus(true, true, recurring_payment_id);
                     } else {
-                        updateUserIpnStatus(true, false);
+                        updateUserIpnStatus(true, false, recurring_payment_id);
                     }
                 } else if (subscribed === false) {
-                    updateUserIpnStatus(false, true);
+                    updateUserIpnStatus(false, true, recurring_payment_id);
                 } else {
-                    updateUserIpnStatus(false, false);
+                    updateUserIpnStatus(false, false, recurring_payment_id);
                 }
             } else if (body === "INVALID") {
                 console.error(`Recieved "INVALID" response for IPN from paypal meaning IPN might not be sent from paypal`);
