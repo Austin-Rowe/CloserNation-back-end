@@ -12,7 +12,10 @@ router.get('/all', checkAuth, (req, res, next) => {
         .exec()
         .then(docs => {
             if(docs.length >= 1){
-                res.status(200).json({docs});
+                res.status(200).json({
+                    length: docs.length,
+                    docs
+                });
             } else {
             res.status(404).json({message: 'No ipn messages!'}); 
             }
