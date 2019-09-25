@@ -8,6 +8,51 @@ const User = require('../models/userModel');
 const IPN = require('../models/ipnModel');
 
 const updateUserIpnStatus = (subStatus, updateSubStatus, recurringId, ipn) => {
+    User.countDocuments({paypalRecurringPaymentId: recurringId}, (err, count) => {
+        if(err){
+            console.error(err);
+        } else if(count > 0){
+            if(updateSubStatus === true){
+                User.updateOne({ paypalRecurringPaymentId: recurringId }, { paidSubscription: subStatus, mostRecentIpnMessage: ipn })
+                .exec()
+                .then(result => {
+                    console.log(`User account updated with IPN to set paidSubscription field ${subStatus}. txn_type: ${txn_type}`);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+            } else if(updateSubStatus === false){
+                User.updateOne({ paypalRecurringPaymentId: recurringId }, { mostRecentIpnMessage: ipn })
+                .exec()
+                .then(result => {
+                    console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed} txn_type: ${txn_type}`);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+            }
+        } else if(count === 0){
+            console.log(`Got an ipn not associated with any user's recurring_Id. Checking if it is in a users recurring_id array...`);
+            User.find({ paypalRecurringPaymentIdArray: recurringId }, (err, docs) => {
+                if(docs.length > 0){
+                    console.log(`The following users were found with the recurring Id in their recurring_id array:`)
+                    console.log(docs);
+                    User.updateOne({ paypalRecurringPaymentIdArray: recurringId }, { mostRecentIpnMessage: ipn })
+                    .exec()
+                    .then(result => {
+                        console.log(`updated user mostRecentIpnMessage subscribed: ${subscribed} txn_type: ${txn_type}`);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                } else {
+                    console.log(`No users found with a match of the recurring_id in their profile.`);
+                }
+            });
+        }
+    });
+
+
     if(updateSubStatus === true){
         User.updateOne({ paypalRecurringPaymentIdArray: recurringId }, { paidSubscription: subStatus, mostRecentIpnMessage: ipn })
         .exec()
