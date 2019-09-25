@@ -122,13 +122,18 @@ exports.user_login = (req, res) => {
                                     expiresIn: "8h"
                                 }
                             );
+                            let hasPaypalRecurringId = false;
+                            if(username.paypalRecurringPaymentId.length > 5){
+                                hasPaypalRecurringId = true;
+                            }
                             res.status(200).json({
                                 message: "Auth successful",
                                 token: token,
                                 admin: username.admin,
                                 paidSubscription: username.paidSubscription,
                                 freeDayToken: username.freeDayToken,
-                                freeDayTokenUsed: username.freeDayTokenUsed
+                                freeDayTokenUsed: username.freeDayTokenUsed,
+                                hasPaypalRecurringId
                             });
                         } else {
                             res.status(403).json({
