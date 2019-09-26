@@ -211,7 +211,7 @@ router.get('/confirm-payment', checkAuth, (req, res) => {
     .exec()
     .then(result => {
         res.status(200).json({
-            message: `Paid Subscription set to true for user with _id: ${}`
+            message: `Paid Subscription set to true for user with _id: ${req.decodedTokenUserData._id}`
         })
         console.log(`User granted access based off return url from paypal`);
     })
