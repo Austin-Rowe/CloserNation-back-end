@@ -84,8 +84,8 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                                     brand_name: "THE BEST CLOSER SHOW",
                                                     locale: "en-US",
                                                     shipping_preference: "NO_SHIPPING",
-                                                    return_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`,
-                                                    cancel_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`
+                                                    return_url: `https://bestclosershow.com/CONFIRM-PAYPAL-SUBSCRIPTION/${confirmPaymentToken}`,
+                                                    cancel_url: `https://bestclosershow.com`
                                                 }
                                             })
                                         },
@@ -149,8 +149,8 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                             brand_name: "THE BEST CLOSER SHOW",
                                             locale: "en-US",
                                             shipping_preference: "NO_SHIPPING",
-                                            return_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`,
-                                            cancel_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`
+                                            return_url: `https://bestclosershow.com/CONFIRM-PAYPAL-SUBSCRIPTION/${confirmPaymentToken}`,
+                                            cancel_url: `https://bestclosershow.com`
                                         }
                                     })
                                 },
