@@ -3,6 +3,8 @@ const router = express.Router();
 const request = require('request');
 const NodeCache = require( "node-cache" );
 const myCache = new NodeCache();
+const jwt = require('jsonwebtoken');
+
 
 const User = require('../models/userModel');
 const checkAuth = require('../authMiddleWare/checkAuth');
@@ -21,6 +23,16 @@ router.post('/subscribe', checkAuth, (req, res) => {
                 message: "No user found!"
             });
         } else {
+            //Create token for return URL that allows automatic access to resources
+            const confirmPaymentToken = jwt.sign(
+                {
+                    _id: decodedTokenUserData._id
+                }, 
+                process.env.JWT_KEY, 
+                {
+                    expiresIn: "1h"
+                }
+            );
             //Check if paypal_token is present
             myCache.keys((err, keys) => {
                 if(!err){
@@ -72,8 +84,8 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                                     brand_name: "THE BEST CLOSER SHOW",
                                                     locale: "en-US",
                                                     shipping_preference: "NO_SHIPPING",
-                                                    return_url: "https://bestclosershow.com",
-                                                    cancel_url: "https://bestclosershow.com"
+                                                    return_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`,
+                                                    cancel_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`
                                                 }
                                             })
                                         },
@@ -137,8 +149,8 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                             brand_name: "THE BEST CLOSER SHOW",
                                             locale: "en-US",
                                             shipping_preference: "NO_SHIPPING",
-                                            return_url: "https://bestclosershow.com",
-                                            cancel_url: "https://bestclosershow.com"
+                                            return_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`,
+                                            cancel_url: `https://api.bestclosershow.com/paypal/confirm-payment?Authorization=${confirmPaymentToken}`
                                         }
                                     })
                                 },
@@ -192,8 +204,20 @@ router.post('/subscribe', checkAuth, (req, res) => {
             error: err
         });
     });
+});
 
-    
+router.get('/confirm-payment', checkAuth, (req, res) => {
+    User.updateOne({ _id: req.decodedTokenUserData._id }, { paidSubscription: true })
+    .exec()
+    .then(result => {
+        res.status(200).json({
+            message: `Paid Subscription set to true for user with _id: ${}`
+        })
+        console.log(`User granted access based off return url from paypal`);
+    })
+    .catch(err => {
+        console.log(err);
+    });
 });
 
 module.exports = router;
