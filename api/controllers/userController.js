@@ -6,8 +6,20 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 exports.user_signup = (req, res) => {
-    let {email, userName, password, firstName, lastName, promoCode } = req.body;
+    let {email, userName, password, firstName, lastName, promoCode, giftToken } = req.body;
     email = email.toLowerCase();
+    let giftTokenUsed = true;
+    if(giftToken){
+        User.findOne({freeDayToken: giftToken})
+        .exec()
+        .then(outcome => {
+            if(outcome){
+                res.status(406).json({message: 'Gift token already in use!'});
+            } else {
+                giftTokenUsed = false;
+            }
+        });
+    }
     User.findOne({email: email})
     .exec()
     .then(result => {
@@ -47,6 +59,16 @@ exports.user_signup = (req, res) => {
                                     lastName: lastName,
                                     freeDayToken: token
                                 }); 
+                            } else if(giftToken && !giftTokenUsed){
+                                user = new User({
+                                    _id: new mongoose.Types.ObjectId(),
+                                    email: email,
+                                    userName: userName,
+                                    password: hash,
+                                    firstName: firstName,
+                                    lastName: lastName,
+                                    freeDayToken: giftToken
+                                });
                             } else {
                                 user = new User({
                                     _id: new mongoose.Types.ObjectId(),

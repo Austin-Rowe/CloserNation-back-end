@@ -97,7 +97,7 @@ router.post('/subscribe', checkAuth, (req, res) => {
                                                 });
                                             } else {
                                                 const parsedBody = JSON.parse(body);
-                                                const approvalLinkObj = parsedBody.links.filter(linkObj => linkObj.rel.toLowerCase() == "approve")[0];
+                                                const approvalLinkObj = parsedBody.links.filter(linkObj => linkObj.rel === "approve")[0];
                                                 const approvalLink = approvalLinkObj.href;
                                                 User.updateOne({_id: decodedTokenUserData._id}, {paypalRecurringPaymentId: parsedBody.id, $push: {paypalRecurringPaymentIdArray: parsedBody.id}})
                                                 .exec()
