@@ -138,5 +138,27 @@ router.post('/execute-payment', checkAuth, (req, res) => {
     });
 });
 
+router.post('/generate-link/:months', checkAuth, (req, res) => {
+    const { decodedTokenUserData } = req;
+    if(decodedTokenUserData.admin){
+        const token = jwt.sign(
+            {
+                message: `Admin generated a token for ${req.params.months} month${req.params.months === 1? '' : 's'}`
+            }, 
+            process.env.JWT_KEY, 
+            {
+                expiresIn: `${req.params.months * 30}d`
+            }
+        );
+
+        res.status(200).json({
+            message: "Link generated",
+            accessLink: `https://bestclosershow.com/gift-account-signup/${req.params.months}/${token}`
+        })
+    } else {
+        res.status(403).json({message: 'Must be admin to generate links!'});
+    }
+});
+
 
 module.exports = router;
