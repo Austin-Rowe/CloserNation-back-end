@@ -212,19 +212,28 @@ exports.resource_patch = (req, res) => {
 
 exports.resource_delete = (req, res) => {
     const resourceId = req.params.resource_id;
+    const filename = req.params.filename;
     const admin = req.decodedTokenUserData.admin;
     if(admin){
-        Resource.deleteOne({_id: resourceId})
-        .exec()
-        .then(result => {
-            res.status(200).json(result)
+        fs.unlink(`/home/ubuntu/archives/${filename}`, err => {
+            if(err){
+                res.status(500).json({
+                    error: err
+                });
+            } else {
+                Resource.deleteOne({_id: resourceId})
+                .exec()
+                .then(result => {
+                    res.status(200).json(result)
+                })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).json({
+                        error: err
+                    });
+                });
+            }
         })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
     } else {
         res.status(403).json({
             message: 'Must be an admin to edit resources'

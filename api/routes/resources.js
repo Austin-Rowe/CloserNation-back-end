@@ -41,7 +41,7 @@ router.get('/video/:filename', checkAuth, ResourceController.resource_serveVideo
 router.get('/image/:filename', checkAuth, ResourceController.resource_serveImage);
 router.post('/new-resource', checkAuth, multer({ storage }).fields(fields), ResourceController.resource_createNew);
 router.patch('/edit', checkAuth, ResourceController.resource_patch);
-router.delete('/:resource_id', checkAuth, ResourceController.resource_delete);
+router.delete('/:resource_id/:filename', checkAuth, ResourceController.resource_delete);
 
 router.post('/default-thumb', checkAuth, multer({ storage: oneTimeUpload }).single('default-thumbnail'), (req, res) => {
     res.status(200).json({
