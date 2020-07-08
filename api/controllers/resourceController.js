@@ -217,8 +217,19 @@ exports.resource_delete = (req, res) => {
     if(admin){
         fs.unlink(`/home/ubuntu/archives/${filename}`, err => {
             if(err){
-                res.status(500).json({
-                    error: err
+                Resource.deleteOne({_id: resourceId})
+                .exec()
+                .then(result => {
+                    res.status(200).json({
+                        result,
+                        error: err
+                    })
+                })
+                .catch(error => {
+                    console.log(error);
+                    res.status(500).json({
+                        error
+                    });
                 });
             } else {
                 Resource.deleteOne({_id: resourceId})
